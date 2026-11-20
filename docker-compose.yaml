@@ -1,0 +1,22 @@
+name: search-service
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: "${SEARCH_DB_NAME:?Set SEARCH_DB_NAME in .env}"
+      POSTGRES_USER: "${SEARCH_DB_USER:?Set SEARCH_DB_USER in .env}"
+      POSTGRES_PASSWORD: "${SEARCH_DB_PASSWORD:?Set SEARCH_DB_PASSWORD in .env}"
+    ports:
+      - "127.0.0.1:${SEARCH_DB_PORT:-5435}:5432"
+    volumes:
+      - search-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  search-data:

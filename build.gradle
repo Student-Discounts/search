@@ -15,6 +15,9 @@ java {
 
 repositories {
 	mavenCentral()
+	maven {
+		url = uri('https://packages.confluent.io/maven/')
+	}
 }
 
 dependencies {
@@ -25,6 +28,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.flywaydb:flyway-database-postgresql'
+	implementation 'io.confluent:kafka-json-schema-serializer:8.0.5'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'

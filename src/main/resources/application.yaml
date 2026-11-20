@@ -1,3 +1,27 @@
 spring:
   application:
     name: search-service
+  config:
+    import: "optional:file:./.env[.properties]"
+  datasource:
+    url: "jdbc:postgresql://127.0.0.1:${SEARCH_DB_PORT}/${SEARCH_DB_NAME}"
+    username: "${SEARCH_DB_USER}"
+    password: "${SEARCH_DB_PASSWORD}"
+  kafka:
+    bootstrap-servers: ${SEARCH_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SEARCH_KAFKA_GROUP_ID:search-catalog-preview}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
+      properties:
+        "[schema.registry.url]": ${SEARCH_SCHEMA_REGISTRY_URL:http://localhost:18085}
+        "[json.fail.invalid.schema]": "true"
+    listener:
+      auto-startup: ${SEARCH_KAFKA_ENABLED:false}
+      ack-mode: record
+
+search:
+  kafka:
+    catalog-topic: ${SEARCH_KAFKA_CATALOG_TOPIC:catalog.search.events}
