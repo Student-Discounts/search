@@ -19,7 +19,7 @@ spring:
         "[schema.registry.url]": ${SEARCH_SCHEMA_REGISTRY_URL:http://localhost:18085}
         "[json.fail.invalid.schema]": "true"
     listener:
-      auto-startup: ${SEARCH_KAFKA_ENABLED:false}
+      auto-startup: ${SEARCH_KAFKA_ENABLED:true}
       ack-mode: record
 
 search:

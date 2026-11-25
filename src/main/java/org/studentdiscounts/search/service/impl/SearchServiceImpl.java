@@ -11,6 +11,7 @@ import org.studentdiscounts.search.dto.response.ScheduleGroupDto;
 import org.studentdiscounts.search.model.ScheduleGroup;
 import org.studentdiscounts.search.model.SearchOffer;
 import org.studentdiscounts.search.model.SearchPlace;
+import org.studentdiscounts.search.model.SearchPlaceWithOffers;
 import org.studentdiscounts.search.repository.SearchRepository;
 import org.studentdiscounts.search.service.SearchService;
 
@@ -38,8 +39,9 @@ public class SearchServiceImpl implements SearchService {
                 .toList();
     }
 
-    private PlaceWithOffersResponseDto toPlaceResponse(SearchPlace place) {
-        List<OfferResponseDto> offers = place.offers().stream()
+    private PlaceWithOffersResponseDto toPlaceResponse(SearchPlaceWithOffers placeWithOffers) {
+        SearchPlace place = placeWithOffers.place();
+        List<OfferResponseDto> offers = placeWithOffers.offers().stream()
                 .map(this::toOfferResponse)
                 .toList();
 

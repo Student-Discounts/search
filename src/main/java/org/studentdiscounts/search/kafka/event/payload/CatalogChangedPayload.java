@@ -1,9 +1,10 @@
 package org.studentdiscounts.search.kafka.event.payload;
 
 import java.util.List;
+import java.util.Optional;
 
 public record CatalogChangedPayload(
-        PlaceSnapshot place,
+        Optional<PlaceSnapshot> place,
         List<OfferSnapshot> offers
 ) {
     public CatalogChangedPayload {

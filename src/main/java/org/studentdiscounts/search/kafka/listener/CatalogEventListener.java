@@ -1,22 +1,20 @@
 package org.studentdiscounts.search.kafka.listener;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.studentdiscounts.search.kafka.event.CatalogChangedEvent;
+import org.studentdiscounts.search.service.CatalogSyncService;
 
-@Slf4j
+
 @Component
+@RequiredArgsConstructor
 public class CatalogEventListener {
+
+    private final CatalogSyncService catalogSyncService;
 
     @KafkaListener(topics = "${search.kafka.catalog-topic}")
     public void onCatalogChanged(CatalogChangedEvent event){
-        log.info(
-                "Received CatalogChanged eventId={}, placeId={}, hasPlace={}, offerCount={}",
-                event.eventId(),
-                event.placeId(),
-                event.data().place() != null,
-                event.data().offers().size()
-        );
+        catalogSyncService.apply(event);
     }
 }

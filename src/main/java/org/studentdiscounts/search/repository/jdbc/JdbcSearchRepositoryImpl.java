@@ -3,10 +3,7 @@ package org.studentdiscounts.search.repository.jdbc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
-import org.studentdiscounts.search.model.DiscountType;
-import org.studentdiscounts.search.model.ScheduleGroup;
-import org.studentdiscounts.search.model.SearchOffer;
-import org.studentdiscounts.search.model.SearchPlace;
+import org.studentdiscounts.search.model.*;
 import org.studentdiscounts.search.repository.SearchRepository;
 import org.studentdiscounts.search.repository.jdbc.sql.SearchSql;
 import tools.jackson.core.type.TypeReference;
@@ -28,8 +25,8 @@ public class JdbcSearchRepositoryImpl implements SearchRepository {
     private final JsonMapper jsonMapper;
 
     @Override
-    public List<SearchPlace> findPlacesWithOffers(String q, String city, String categoryCode, String discountType, int limit, long offset) {
-        List<SearchPlace> places = new ArrayList<>();
+    public List<SearchPlaceWithOffers> findPlacesWithOffers(String q, String city, String categoryCode, String discountType, int limit, long offset) {
+        List<SearchPlaceWithOffers> places = new ArrayList<>();
         Map<UUID, List<SearchOffer>> offersByPlace = new HashMap<>();
 
         jdbcClient.sql(SearchSql.FIND_PLACES_WITH_OFFERS)
@@ -47,9 +44,8 @@ public class JdbcSearchRepositoryImpl implements SearchRepository {
                         offers = new ArrayList<>();
                         offersByPlace.put(placeId, offers);
 
-                        places.add(mapPlace(
-                                rs,
-                                placeId,
+                        places.add(new SearchPlaceWithOffers(
+                                mapPlace(rs, placeId),
                                 Collections.unmodifiableList(offers)
                         ));
                     }
@@ -60,15 +56,63 @@ public class JdbcSearchRepositoryImpl implements SearchRepository {
         return places;
     }
 
-    private static SearchPlace mapPlace(ResultSet rs, UUID placeId, List<SearchOffer> offers) throws SQLException {
+    @Override
+    public boolean tryAdvanceRevision(SearchSyncState syncState) {
+        return jdbcClient.sql(SearchSql.ADVANCE_REVISION)
+                .param("entityType", syncState.entityType().name())
+                .param("entityId", syncState.entityId())
+                .param("revision", syncState.revision())
+                .param("deleted", syncState.deleted())
+                .update() == 1;
+    }
+
+    @Override
+    public void upsertPlace(SearchPlace place) {
+        jdbcClient.sql(SearchSql.UPSERT_PLACE)
+                .param("placeId", place.placeId())
+                .param("placeName", place.name())
+                .param("city", place.city())
+                .param("addressLine", place.addressLine())
+                .param("longitude", place.location().longitude())
+                .param("latitude", place.location().latitude())
+                .param("categoryCode", place.categoryCode())
+                .param("categoryName", place.categoryName())
+                .param("timezone", place.timezone())
+                .update();
+
+    }
+
+    @Override
+    public void upsertOffer(SearchOffer offer) {
+        jdbcClient.sql(SearchSql.UPSERT_OFFER)
+                .param("offerId", offer.offerId())
+                .param("placeId", offer.placeId())
+                .param("discountType", offer.discountType().name())
+                .param("discountValue", offer.discountValue())
+                .param("lastVerifiedAt", offer.lastVerifiedAt())
+                .param("validFrom", offer.validFrom())
+                .param("validUntil", offer.validUntil())
+                .param("schedule", jsonMapper.writeValueAsString(offer.schedule()))
+                .update();
+    }
+
+    @Override
+    public void deleteOffer(UUID offerId) {
+        jdbcClient.sql(SearchSql.DELETE_OFFER)
+                .param("offerId", offerId)
+                .update();
+    }
+
+    private static SearchPlace mapPlace(ResultSet rs, UUID placeId) throws SQLException {
         return new SearchPlace(
                 placeId,
                 rs.getString("name"),
                 rs.getString("city"),
                 rs.getString("address_line"),
+                new Location(rs.getDouble("latitude"), rs.getDouble("longitude")),
                 rs.getString("category_code"),
                 rs.getString("category_name"),
-                offers
+                rs.getString("timezone")
         );
     }
 

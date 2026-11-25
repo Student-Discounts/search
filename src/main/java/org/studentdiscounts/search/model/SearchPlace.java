@@ -1,6 +1,5 @@
 package org.studentdiscounts.search.model;
 
-import java.util.List;
 import java.util.UUID;
 
 public record SearchPlace(
@@ -8,8 +7,9 @@ public record SearchPlace(
         String name,
         String city,
         String addressLine,
+        Location location,
         String categoryCode,
         String categoryName,
-        List<SearchOffer> offers
+        String timezone
 ) {
 }
