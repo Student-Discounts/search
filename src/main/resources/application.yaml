@@ -4,7 +4,7 @@ spring:
   config:
     import: "optional:file:./.env[.properties]"
   datasource:
-    url: "jdbc:postgresql://127.0.0.1:${SEARCH_DB_PORT}/${SEARCH_DB_NAME}"
+    url: "jdbc:postgresql://${SEARCH_DB_HOST:127.0.0.1}:${SEARCH_DB_PORT}/${SEARCH_DB_NAME}"
     username: "${SEARCH_DB_USER}"
     password: "${SEARCH_DB_PASSWORD}"
   kafka:
